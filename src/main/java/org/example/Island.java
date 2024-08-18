@@ -18,20 +18,35 @@ public class Island {
             }
         }
         createObjects();
+        createInteractionMatrix();
     }
 
     private void createObjects() {
-        int numberOfObjects = 2;
-        int i = 1;
-        while (i <= numberOfObjects) {
-            for (IslandObjects objectType : IslandObjects.values()) {
-                Random random = new Random();
-                int x = random.nextInt(WIDTH);
-                int y = random.nextInt(HEIGHT);
-                IslandObject islandObject = objectType.createObject(island, x, y);
-                island[y][x].add(islandObject);
+//        int numberOfObjects = 2;
+//        int i = 1;
+//        while (i <= numberOfObjects) {
+//            for (IslandObjects objectType : IslandObjects.values()) {
+//                Random random = new Random();
+//                int x = random.nextInt(WIDTH);
+//                int y = random.nextInt(HEIGHT);
+//                IslandObject islandObject = objectType.createObject(island, x, y);
+//                if (islandObject instanceof Animal) {
+//                    ((Animal) islandObject).canMultiple = true;
+//                }
+//
+//                island[y][x].add(islandObject);
+//            }
+//            i++;
+//        }
+        /*ТЕСТИРУЮЩИЙ КОД*/
+        island[0][0].add(new Wolf(island, 0, 0));
+        island[0][0].add(new Wolf(island, 0, 0));
+        island[0][0].add(new Rabbit(island, 0, 0));
+        island[0][0].add(new Rabbit(island, 0, 0));
+        for (IslandObject islandObject : island[0][0]) {
+            if (islandObject instanceof Animal) {
+                ((Animal) islandObject).canMultiple = true;
             }
-            i++;
         }
 
     }
@@ -69,6 +84,7 @@ public class Island {
 
     }
 
+    /*Тестирующий метод*/
     public void multiple() {
         for (int y = 0; y < island.length; y++) {
             for (int x = 0; x < island[0].length; x++) {
@@ -91,6 +107,38 @@ public class Island {
 
             }
 
+        }
+    }
+
+    public void eat() {
+        for (int y = 0; y < island.length; y++) {
+            for (int x = 0; x < island[0].length; x++) {
+                List<Animal> cell = island[y][x].stream()
+                        .filter(islandObject -> islandObject instanceof Animal)
+                        .map(islandObject -> (Animal) islandObject)
+                        .collect(Collectors.toList());
+                ListIterator<Animal> iterator = cell.listIterator();
+                while (iterator.hasNext()) {
+                    Animal currentObject = iterator.next();
+                    currentObject.eat();
+                }
+            }
+        }
+
+    }
+
+    public void createInteractionMatrix() {
+        Animal.interactionMatrix.put("Wolf", new HashMap<>());
+        Animal.interactionMatrix.get("Wolf").put("Rabbit", 60);
+    }
+
+    public void plantGrowth() {
+        Random random = new Random();
+
+        for (int i = 0; i < 2; i++) {
+            int x = random.nextInt(WIDTH);
+            int y = random.nextInt(HEIGHT);
+            island[y][x].add(new Plant(island, x, y));
         }
     }
 }

@@ -1,11 +1,9 @@
 package org.example;
 
-import javax.sound.midi.Soundbank;
+
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
+
+import java.util.*;
 
 public abstract class Animal implements IslandObject, Identificable {
     public int x;
@@ -16,8 +14,12 @@ public abstract class Animal implements IslandObject, Identificable {
     public int speed;
     public int currentSpeed;
     public double amountOfFood;
+    public double currentAmountOfFood;
     public boolean canMultiple;
     Sex sex;
+
+    public static Map <String, Map<String, Integer>> interactionMatrix = new HashMap<>();
+
 
     public abstract void eat();
 
@@ -26,22 +28,31 @@ public abstract class Animal implements IslandObject, Identificable {
         List<Animal> animalCell = islandObjects[y][x].stream()
                 .filter(islandObject -> islandObject instanceof Animal)
                 .map(islandObject -> (Animal) islandObject)
-                .collect(Collectors.toList());
-        for (Animal animal : animalCell) {
-            if ((animal.getClass() == this.getClass()) && !(animal.getID().equals(this.getID()))) {
-                try {
-                    Constructor<?> constructor = this.getClass().getDeclaredConstructor(List[][].class, int.class, int.class);
-                    constructor.setAccessible(true);
-                    newAnimal = (Animal) constructor.newInstance(islandObjects, x, y);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                .toList();
+        int animalCount = 0;
+        for(Animal animal : animalCell) {
+            if(animal.getClass().equals(this.getClass())) {
+                animalCount++;
+            }
+        }
+        if (animalCount < maxQuantity) {
+            for (Animal animal : animalCell) {
+                if ((this.canMultiple) && (animal.canMultiple) && (animal.getClass() == this.getClass()) && !(animal.getID().equals(this.getID())) && !(animal.sex.equals(this.sex))) {
+                    try {
+                        Constructor<?> constructor = this.getClass().getDeclaredConstructor(List[][].class, int.class, int.class);
+                        constructor.setAccessible(true);
+                        newAnimal = (Animal) constructor.newInstance(islandObjects, x, y);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-            if (newAnimal != null) {
-                canMultiple = false;
-                return newAnimal;
-            }
+                if (newAnimal != null) {
+                    this.canMultiple = false;
+                    animal.canMultiple = false;
+                    return newAnimal;
+                }
 
+            }
         }
         canMultiple = true;
         return null;
@@ -59,19 +70,15 @@ public abstract class Animal implements IslandObject, Identificable {
             directions.add("RIGHT");
             directions.add("LEFT");
             directions.add("DOWN");
-            if (x == islandObjects[0].length - 1) {
-                if (directions.contains("RIGHT"))
-                    directions.remove(directions.indexOf("RIGHT"));
-            } else if (x == 0) {
-                if (directions.contains("LEFT"))
-                    directions.remove(directions.indexOf("LEFT"));
+            if ((x == islandObjects[0].length - 1) || !freeSpaceCheck(islandObjects[y][x + 1])) {
+                directions.remove("RIGHT");
+            } else if ((x == 0) || !freeSpaceCheck(islandObjects[y][x - 1])) {
+                directions.remove("LEFT");
             }
-            if (y == islandObjects.length - 1) {
-                if (directions.contains("UP"))
-                    directions.remove(directions.indexOf("UP"));
-            } else if (y == 0) {
-                if (directions.contains("DOWN"))
-                    directions.remove(directions.indexOf("DOWN"));
+            if ((y == islandObjects.length - 1) || !freeSpaceCheck(islandObjects[y + 1][x])) {
+                directions.remove("UP");
+            } else if ((y == 0) || !freeSpaceCheck(islandObjects[y - 1][x])) {
+                directions.remove("DOWN");
             }
             Random random = new Random();
             String direction = directions.get(random.nextInt(directions.size()));
@@ -93,6 +100,8 @@ public abstract class Animal implements IslandObject, Identificable {
                     currentCell = islandObjects[y][x - 1];
                     x--;
                     break;
+                default:
+                    break;
             }
 
         }
@@ -104,5 +113,14 @@ public abstract class Animal implements IslandObject, Identificable {
             this.canMultiple = true;
 
         }
+    }
+    public boolean freeSpaceCheck(List<IslandObject> islandObjectsList) {
+        int n = 0;
+        for(IslandObject islandObject : islandObjectsList) {
+            if (islandObject.getClass().equals(this.getClass())) {
+                n++;
+            }
+        }
+        return n < maxQuantity;
     }
 }

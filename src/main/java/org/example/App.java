@@ -12,17 +12,17 @@ import java.util.TimerTask;
  */
 public class App {
 
-//При проверке появляется дополнительный объект, дебажить и проверять
+//ДОБАВИТЬ ПОКАЗАТЕЛЬ ВРЕМЕНИ ДЛЯ ДОСТИЖЕНИЯ ФЕРТИЛЬНОСТИ
+    // ДОБАВИТЬ УЧЕТ МАКСИМАЛЬНОГО КОЛИЧЕСТВА ОБЪЕКТОВ ДАННОГО ТИПА В ЯЧЕЙКЕ ОСТРОВА
 
     public static void main(String[] args) {
         Island myIsland = new Island(5, 5);
 
         //myIsland.move();
-        myIsland.island[0][0].add(new Wolf(myIsland.island,0,0));
-        myIsland.island[0][0].add(new Wolf(myIsland.island,0,0));
+
         System.out.println("Остров создан!");
-          myIsland.multiple();
-        System.out.println("Все.");
+        myIsland.eat();
+        System.out.println("Все кролики съедены!");
     }
 }
 
