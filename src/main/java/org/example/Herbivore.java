@@ -1,19 +1,40 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 public abstract class Herbivore extends Animal {
+    public Herbivore(double amountOfFood) {
+        super(amountOfFood);
+    }
+
     public void eat() {
-        List<IslandObject> tempCell = new ArrayList<>(islandObjects[y][x]);
-        for (IslandObject islandObject : islandObjects[y][x]) {
-            if (islandObject instanceof Plant) {
-                tempCell.remove(islandObject);
-                this.currentAmountOfFood += ((Plant) islandObject).weight;
+        lock.lock();
+        try{
+        List<IslandObject> localCell = new ArrayList<>(islandObjects[y][x]);
+
+            List<IslandObject> tempCell = new ArrayList<>(localCell);
+            for (Iterator<IslandObject> it = localCell.iterator(); it.hasNext(); ) {
+                IslandObject islandObject = it.next();
+                if (islandObject instanceof Plant && !this.ate) {
+
+
+                    this.ate = true;
+                    tempCell.remove(islandObject);
+                    this.currentAmountOfFood += ((Plant) islandObject).weight;
+                    synchronized (this) {
+                        Island.plantsEaten++;
+                    }
+                }
             }
+            islandObjects[y][x] = tempCell;
+        } finally {
+            lock.unlock();
         }
-        islandObjects[y][x] = tempCell;
+
+
     }
 }
 

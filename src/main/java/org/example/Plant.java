@@ -8,15 +8,22 @@ public class Plant implements IslandObject {
     public List<IslandObject>[][] islandObjects;
     public double weight;
     public int maxQuantity = 200;
-    public int plantCounter = 0;
+    private static int plantCounter = 0;
+    private String id;
 
-    public Plant(List<IslandObject>[][] island, int x, int y)
-    {
+
+    public Plant(List<IslandObject>[][] island, int x, int y) {
         plantCounter++;
+        id = "Plant" + plantCounter;
+
         this.islandObjects = island;
         this.x = x;
         this.y = y;
-        this.weight = 1.0;
+        this.weight = 2.0;
         this.maxQuantity = 200;
+    }
+
+    public static int getPlantCounter() {
+        return plantCounter;
     }
 }
