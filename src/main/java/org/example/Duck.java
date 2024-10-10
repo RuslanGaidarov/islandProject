@@ -31,43 +31,27 @@ public class Duck extends Herbivore {
         lock.lock();
         try {
             List<IslandObject> localCell = new ArrayList<>(islandObjects[y][x]);
-
-            List<IslandObject> tempCell = new ArrayList<>(localCell);
-            for (Iterator<IslandObject> it = localCell.iterator(); it.hasNext(); ) {
-                IslandObject islandObject = it.next();
+            Iterator<IslandObject> iterator = localCell.iterator();
+            while (iterator.hasNext()) {
+                IslandObject islandObject = iterator.next();
                 if (((islandObject instanceof Plant) || (islandObject instanceof Caterpillar)) && !this.ate) {
 
-
                     this.ate = true;
-                    tempCell.remove(islandObject);
+                    iterator.remove();  // Удаляем съеденный объект (растение или гусеницу)
                     if (islandObject instanceof Plant) {
-                        synchronized (this) {
-                            Island.plantsEaten++;
-                        }
+                        Island.plantsEaten++;
                         this.currentAmountOfFood += ((Plant) islandObject).weight;
-                    } else {
-                        Random rand = new Random();
-                        int eatingPoints = rand.nextInt(0, 101);
-                        int probabilityOfEating = interactionMatrix.get(this.getClass().getSimpleName()).get(islandObject.getClass().getSimpleName());
-                        if (eatingPoints < probabilityOfEating) {
-                            this.ate = true;
-                            ((Herbivore) islandObject).isAlive = false;
-                            if (((Herbivore) islandObject).weight < this.amountOfFood) {
-                                this.currentAmountOfFood += ((Herbivore) islandObject).weight;
-                            } else {
-                                this.currentAmountOfFood = this.amountOfFood;
-                            }
-
-                            Island.animalsEaten++;
-                           // System.out.println("Животное " + this.id + " съело животное " + ((Herbivore) islandObject).id);
-                        }
+                    } else if (islandObject instanceof Caterpillar) {
+                        Island.animalsEaten.incrementAndGet();
+                        this.currentAmountOfFood += ((Caterpillar) islandObject).weight;
                     }
                 }
             }
-            islandObjects[y][x] = tempCell;
+            islandObjects[y][x] = localCell;  // Обновляем клетку
         } finally {
             lock.unlock();
         }
     }
+
 }
 

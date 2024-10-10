@@ -79,7 +79,8 @@ public abstract class Animal implements IslandObject {
                         if (newAnimal != null) {
                             this.canMultiple = false;
                             animal.canMultiple = false;
-                            Island.children++;
+                            Island.children.incrementAndGet();
+
                             return newAnimal;
 
 

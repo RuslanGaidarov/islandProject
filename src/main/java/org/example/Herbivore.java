@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class Herbivore extends Animal {
     public Herbivore(double amountOfFood) {
@@ -24,9 +25,9 @@ public abstract class Herbivore extends Animal {
                     this.ate = true;
                     tempCell.remove(islandObject);
                     this.currentAmountOfFood += ((Plant) islandObject).weight;
-                    synchronized (this) {
+
                         Island.plantsEaten++;
-                    }
+
                 }
             }
             islandObjects[y][x] = tempCell;

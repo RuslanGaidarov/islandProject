@@ -12,7 +12,6 @@ public abstract class Predator extends Animal {
     }
 
     public void eat() {
-
         lock.lock();
         try {
             List<IslandObject> tempCell = new ArrayList<>(islandObjects[y][x]);
@@ -27,26 +26,22 @@ public abstract class Predator extends Animal {
                     if (eatingPoints < probabilityOfEating) {
                         this.ate = true;
                         ((Herbivore) islandObject).isAlive = false;
-                       // System.out.println("Животное " + this.id + " съело животное " + ((Herbivore) islandObject).id);
-                        Island.animalsEaten++;
+                        iterator.remove();  // Удаляем травоядное после поедания
+                        System.out.printf("Животное " + ((Herbivore) islandObject).id + " СЪЕДЕНО. ");
+                        Island.animalsEaten.incrementAndGet();
                         if (((Herbivore) islandObject).weight < this.amountOfFood) {
                             this.currentAmountOfFood += ((Herbivore) islandObject).weight;
                         } else {
                             this.currentAmountOfFood = this.amountOfFood;
                         }
-                     //  System.out.println("Животное " + this.id + " съело животное " + ((Herbivore) islandObject).id);
-
-
                     }
-
-
                 }
             }
-
-
+            islandObjects[y][x].clear();
+            islandObjects[y][x].addAll(tempCell);// Обновляем клетку
         } finally {
             lock.unlock();
         }
-
     }
+
 }

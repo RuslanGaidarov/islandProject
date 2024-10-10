@@ -1,10 +1,12 @@
 package org.example;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -13,9 +15,9 @@ public class Island {
 
     private static Island instance;
     private final Object islandObjectsLock = new Object();
-    public static int animalsEaten = 0;
+    public static AtomicInteger animalsEaten = new AtomicInteger(0);
     public static int plantsEaten = 0;
-    public static int children = 0;
+    public static AtomicInteger children = new AtomicInteger(0);
     public static int moved = 0;
     public static int time = 0;
     public static boolean plantsGrown = false;
@@ -76,10 +78,16 @@ public class Island {
         try {
             List<IslandObject> cell = new ArrayList<>(island[i][j]);
             Iterator<IslandObject> iterator = cell.iterator();
+            ArrayList<Animal> children = new ArrayList<>();
 
             while (iterator.hasNext()) {
+
                 Random random = new Random();
                 IslandObject islandObject = iterator.next();
+
+                if (islandObject instanceof Animal && !((Animal) islandObject).isAlive && island[i][j].contains(islandObject)) {
+                    island[i][j].remove(islandObject);
+                }
 
                 if (islandObject instanceof Animal animal) {
 
@@ -88,23 +96,35 @@ public class Island {
                         animal.chooseDirection();
                     }
 
-                   //animal.eat();
+                    animal.eat();
 
                     Animal child = animal.multiple();
 
-                        if (child != null)
-                            synchronized (island[child.y][child.x]) {
-                            island[child.y][child.x].add(child);
-                                //System.out.print(child.id + " добавлено ");
+                    if (child != null && !children.contains(child)) {
+
+                        children.add(child);
+
+
                     }
 
-                    if (islandObject instanceof Animal && !((Animal) islandObject).isAlive) {
-                        iterator.remove();
-                    }
                 }
 
 
             }
+
+            for (Animal child : children) {
+                synchronized (island[child.y][child.x]) {
+                    if (!island[child.y][child.x].contains(child)) {
+                        island[child.y][child.x].add(child);
+
+                        // System.out.print("Детёныш " + child.id + " добавлен в клетку (" + child.x + ", " + child.y + ") ");
+                    }
+                    if (island[child.y][child.x].contains(child)) {
+                       System.out.print(child.id + " добавлено, координаты: (" + child.y + ", " + child.x + ") ");
+                    }
+                }
+            }
+
         } finally {
             cellLocks[i][j].unlock();
         }
@@ -179,10 +199,11 @@ public class Island {
 //                    }
 //                }
 //            }
-//        }
+
+
         System.out.println("Съедено животных в этот день - " + Island.animalsEaten + ", растений - " + Island.plantsEaten);
-        System.out.println("Произведено на свет детенышей: " + Island.children);
-        System.out.println("Итоговая прибыль населения: " + (Island.children - Island.animalsEaten));
+        System.out.println("Произведено на свет детенышей по счетчику: " + Island.children);
+        System.out.println("Итоговая прибыль населения: " + (Island.children.get() - Island.animalsEaten.get()));
         System.out.println("Время на острове: " + time);
     }
 
@@ -200,9 +221,9 @@ public class Island {
                         ((Animal) islandObject).multipled = false;
                         ((Animal) islandObject).canMultiple = true;
                         ((Animal) islandObject).changedAmountOfFood = false;
-                        Island.children = 0;
+                        Island.children.set(0);
                         Island.plantsEaten = 0;
-                        Island.animalsEaten = 0;
+                        Island.animalsEaten.set(0);
                         Island.plantsGrown = false;
                     }
                 }
